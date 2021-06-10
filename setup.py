@@ -16,20 +16,20 @@ import re
 sys.setrecursionlimit(10 ** 9)
 
 # ------------------------ ここを変更 --------------------------------
-PACKAGE_NAME = 'ternary_diagram'    # フォルダの名前も統一
+PACKAGE_NAME = 'iaso_converter'    # フォルダの名前も統一
 DESCRIPTION = ''
 
 # py2app用の変数
-SRC = ['main.py']
-DATA_FILES = ['LICENSE']
-PKGS = []
+SRC = ['gui.py']
+DATA_FILES = ['LICENSE', 'settings.json', 'about.txt', 'cols.txt']
+PKGS = ['pandas', 'numpy', 'openpyxl', 'PySimpleGUI']
 ICON = os.path.join('icon', '{}.icns'.format(PACKAGE_NAME))
 # --------------------------------------------------------------------
 
 VERSION_PYTHON = '{0}.{1}'.format(sys.version_info.major, sys.version_info.minor)
 
 # __init__.pyから読み込む
-with open(os.path.join(PACKAGE_NAME, '__init__.py')) as f:
+with open(os.path.join('src', '__init__.py')) as f:
     init_text = f.read()
     VERSION = re.search(r'__version__\s*=\s*[\'\"](.+?)[\'\"]', init_text).group(1)
     LICENSE = re.search(r'__license__\s*=\s*[\'\"](.+?)[\'\"]', init_text).group(1)
@@ -142,7 +142,7 @@ else:
         license = LICENSE,
         packages = find_packages(exclude=['example']),
         classifiers = [
-            'License :: OSI Approved :: MIT License',
+            'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',

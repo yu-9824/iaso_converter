@@ -1,6 +1,6 @@
 Copyright (c) 2021 yu-9824
 This software is released under the GNU Lesser General Public License Version 3,
-
+See https://github.com/yu-9824/iaso_converter/blob/main/LICENSE .
 
 This software uses the following libraries.
 
