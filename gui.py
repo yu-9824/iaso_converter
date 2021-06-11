@@ -48,6 +48,7 @@ class gui:
 
         while True:
             main_menu.read()
+            print(main_menu.values)
             # print(main_menu.values)
             if main_menu.event is None:
                 break
@@ -69,11 +70,11 @@ class gui:
                         sg.PopupError(e, **option_popup)
                         continue
                     else:
-                        ok_or_cancel = sg.PopupYesNo('Completed!\nWould you like to convert another one?', **option_popup)
+                        ok_or_cancel = sg.PopupYesNo('Completed!\nCan I close the application?', **option_popup)
                         if ok_or_cancel in ('Yes', None):
-                            continue
-                        elif ok_or_cancel == 'No':
                             break
+                        elif ok_or_cancel == 'No':
+                            continue
 
 
 
@@ -161,6 +162,7 @@ import os
 
 
 rstrip = np.frompyfunc(lambda x:x.rstrip('\r\n'), 1, 1)
+_add_quotation = np.frompyfunc(lambda x:'"'+x+'"', 1, 1)
 
 class Converter:
     def __init__(self, fpath_input, fpath_output, delimiter = ','):
@@ -189,7 +191,9 @@ class Converter:
         with cd.open(self.fpath_input, *self.options_codecs) as csv_file:
             row = ['']
             skiprows = -3
-            while not (set(self.cols) <= set(row)):
+            while not (set(_add_quotation(self.cols)) <= set(row) or set(self.cols) <= set(row)):   # 生のcsvでは""がついているので，それによるバグを防ぐため．
+                if skiprows > 30:
+                    raise TimeoutError("I couldn't find the proper header line.")
                 row = csv_file.readline().split(self.delimiter)
                 skiprows += 1
         return skiprows
