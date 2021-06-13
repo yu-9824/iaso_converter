@@ -1,5 +1,5 @@
 
-__version__      = '0.0.2'
+__version__      = '0.1.0'
 __license__      = 'LGPLv3'
 __author__       = 'yu-9824'
 __copyright__    = 'Copyright (c) 2021 yu-9824'

@@ -211,8 +211,6 @@ class Converter:
         df_csv_info = pd.DataFrame(lst_csv_info)
         df_csv_tbl = pd.DataFrame(lst_csv_tbl)
 
-        df_csv_info = df_csv_info
-
         i_header = 0
         df_csv_tbl.columns = df_csv_tbl.iloc[i_header]
         df_csv_tbl.columns.name = None
