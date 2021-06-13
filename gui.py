@@ -258,16 +258,16 @@ class Converter:
 
 
 if __name__ == '__main__':
-    # gui().run()
+    gui().run()
 
     # fpath_input = 'input/stock_list_20210610145730.csv'
-    fpath_input = 'input/stock_list_20210611112304.csv'
+    # fpath_input = 'input/stock_list_20210611112304.csv'
 
-    dir_output = os.path.dirname(__file__)
-    fname_output = '{}.xlsx'.format(os.path.splitext(os.path.basename(fpath_input))[0])
-    fpath_output = os.path.join(dir_output, fname_output)
+    # dir_output = os.path.dirname(__file__)
+    # fname_output = '{}.xlsx'.format(os.path.splitext(os.path.basename(fpath_input))[0])
+    # fpath_output = os.path.join(dir_output, fname_output)
 
-    cv = Converter(fpath_input=fpath_input, fpath_output=fpath_output)
-    cv.main()
+    # cv = Converter(fpath_input=fpath_input, fpath_output=fpath_output)
+    # cv.main()
     
 
