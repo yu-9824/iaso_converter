@@ -159,10 +159,8 @@ import codecs as cd
 import numpy as np
 from openpyxl.styles.borders import Border, Side
 import os
+from csv import reader
 
-
-rstrip = np.frompyfunc(lambda x:x.rstrip('\r\n'), 1, 1)
-_add_quotation = np.frompyfunc(lambda x:'"'+x+'"', 1, 1)
 
 class Converter:
     def __init__(self, fpath_input, fpath_output, delimiter = ','):
@@ -172,56 +170,53 @@ class Converter:
         
         fpath_cols = 'cols.txt'
         with open(fpath_cols, mode='r', encoding='utf_8_sig') as f:
-            self.cols = rstrip(f.readlines())
+            self.cols = f.read().splitlines()
         # self.cols = ['薬品名','メーカー','規格','CAS No.','内容量','単位名','未開封','開封','法規 日本語','シンボル 日本語','形状','純度規格']
 
         self.options_codecs = ["r", 'shift_jis', "ignore"]
 
     def main(self):
-        skiprows = self._get_skiprows()
-        df = self._get_df(skiprows=skiprows)
-        df_info = self._get_df_info(skiprows=skiprows)
+        df_info, df = self._get_df()
         df_info_add = self._extract_info(df_info=df_info)
         self._output_excel(df=df, df_info_add=df_info_add)
         # レイアウトを整える．
         self._arrange_layout(df_info_add=df_info_add)
         
 
-    def _get_skiprows(self):
+    def _get_df(self):
         with cd.open(self.fpath_input, *self.options_codecs) as csv_file:
-            row = ['']
-            skiprows = -3
-            while not (set(_add_quotation(self.cols)) <= set(row) or set(self.cols) <= set(row)):   # 生のcsvでは""がついているので，それによるバグを防ぐため．
-                if skiprows > 30:
-                    raise TimeoutError("I couldn't find the proper header line.")
-                row = csv_file.readline().split(self.delimiter)
-                skiprows += 1
-        return skiprows
+            lst_csv = tuple(reader(csv_file))  # 生のcsvでは""がついているので，それによるバグを防ぐためpd.read_csvは使っていない．
+        for i, row in enumerate(lst_csv):
+            if set(self.cols) <= set(row):
+                break
+            if i > 30:
+                raise TimeoutError("I couldn't find the proper header line.")
+        lst_csv_info = lst_csv[:i]
+        lst_csv_tbl = lst_csv[i:]
 
-    def _get_df(self, skiprows):
-        with cd.open(self.fpath_input, *self.options_codecs) as csv_file:
-            df = pd.read_table(csv_file, sep=',', header=skiprows)
-        return df
+        df_csv_info = pd.DataFrame(lst_csv_info)
+        df_csv_tbl = pd.DataFrame(lst_csv_tbl)
 
+        df_csv_info = df_csv_info
 
-
-    def _get_df_info(self, skiprows):
-        usecols = [0, 1]
-        with cd.open(self.fpath_input, *self.options_codecs) as csv_file:
-            df_info = pd.read_table(csv_file, sep=self.delimiter, nrows=skiprows-1, usecols=usecols, header=None)
-        return df_info
-
+        i_header = 0
+        df_csv_tbl.columns = df_csv_tbl.iloc[i_header]
+        df_csv_tbl.columns.name = None
+        df_csv_tbl = df_csv_tbl.drop(i_header, axis=0).dropna(axis=0, how='all').reset_index(drop=True)
+        return df_csv_info, df_csv_tbl
 
     def _extract_info(self, df_info):
-        n_userows = 2
-        df_info_add = rstrip(df_info[-n_userows:])
+        n_userows = 3
+        df_info_add = df_info[-n_userows:]
         df_info_add.columns = range(df_info_add.shape[1])
-        df_info_add = pd.concat([df_info_add, pd.DataFrame(np.array([np.nan]*df_info_add.shape[1])).transpose()], axis=0, ignore_index=True)    # 1行あける
+        # df_info_add = pd.concat([df_info_add, pd.DataFrame(np.array([np.nan]*df_info_add.shape[1])).transpose()], axis=0, ignore_index=True)    # 1行あける
         return df_info_add
 
 
     def _output_excel(self, df, df_info_add):
         df_output = pd.concat([df_info_add, df[self.cols].transpose().reset_index().transpose()], axis = 0, ignore_index=True)
+        rstrip = np.frompyfunc(lambda x:x.rstrip() if type(x) == str else x, 1, 1)
+        df_output = rstrip(df_output)
 
         # 書き出す．
         df_output.to_excel(self.fpath_output, index=False, header=False)
@@ -256,22 +251,23 @@ class Converter:
                     n_lines = max(n_lines, str(cell.value).count('\n')+1) # intになる可能性があるのでstrを使ってる．
                 if cell.row > df_info_add.shape[0]:
                     ws1[cell.coordinate].border = border
-            adjusted_height = 11 * 1.25 * n_lines   # 11はフォントサイズ．
+            adjusted_height = 11 * 1.35 * n_lines   # 11はフォントサイズ．
             ws1.row_dimensions[r].height = adjusted_height
         # save xlsx file
         wb1.save(self.fpath_output)
 
 
 if __name__ == '__main__':
-    gui().run()
+    # gui().run()
 
     # fpath_input = 'input/stock_list_20210610145730.csv'
+    fpath_input = 'input/stock_list_20210611112304.csv'
 
-    # dir_output = os.path.dirname(__file__)
-    # fname_output = '{}.xlsx'.format(os.path.splitext(os.path.basename(fpath_input))[0])
-    # fpath_output = os.path.join(dir_output, fname_output)
+    dir_output = os.path.dirname(__file__)
+    fname_output = '{}.xlsx'.format(os.path.splitext(os.path.basename(fpath_input))[0])
+    fpath_output = os.path.join(dir_output, fname_output)
 
-    # cv = Converter(fpath_input=fpath_input, fpath_output=fpath_output)
-    # cv.main()
+    cv = Converter(fpath_input=fpath_input, fpath_output=fpath_output)
+    cv.main()
     
 
