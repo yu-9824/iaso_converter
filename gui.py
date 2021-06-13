@@ -228,7 +228,7 @@ class Converter:
     def _output_excel(self, df, df_info_add):
         df_output = pd.concat([df_info_add, df[self.cols].transpose().reset_index().transpose()], axis = 0, ignore_index=True)
         rstrip = np.frompyfunc(lambda x:x.rstrip() if type(x) == str else x, 1, 1)
-        df_output = rstrip(df_output)
+        df_output = rstrip(df_output.replace('', np.nan).dropna(axis=1, how='all'))
 
         # 書き出す．
         df_output.to_excel(self.fpath_output, index=False, header=False)
